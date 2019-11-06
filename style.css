@@ -1,0 +1,95 @@
+body {
+  width: 1049px;
+  margin: 0 auto;
+  padding: 0;
+}
+
+.container {
+  width: 1049px;
+  padding: 20px;
+  border: 2px solid black;
+  display: flex;
+  flex-direction: column;
+}
+
+textarea {
+  border: 1px solid black;
+}
+
+.keyboard {
+  width: 900px;
+  margin: 20px auto;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+}
+
+.button {
+  width: 50px;
+  margin: 5px;
+  background-color: #3a424e;
+  color: #ffffff;
+  text-align: center;
+  font-size: 20px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.button .lang,
+.button .case {
+  height: 50px;
+  line-height: 50px;
+  user-select: none;
+}
+
+.button:hover {
+  background-color: #470808;
+}
+
+.backspace,
+.capsLock,
+.shiftLeft,
+.enter,
+.shiftRight {
+  width: 100px;
+  background-color: #1c232e;
+  text-transform: capitalize;
+}
+
+.tab {
+  width: 70px;
+  background-color: #1c232e;
+  text-transform: capitalize;
+}
+
+.del {
+  background-color: #1c232e;
+  text-transform: uppercase;
+}
+
+.ctrl,
+.win,
+.alt,
+.arrowTop,
+.arrowLeft,
+.arrowRight,
+.arrowBottom {
+  background-color: #1c232e;
+  text-transform: capitalize;
+}
+
+.space {
+  width: 460px;
+}
+
+.button--active,
+.button:active {
+  border-radius: 50%;
+  background-color: #368baf;
+}
+
+.visually-hidden {
+  display: none;
+}
