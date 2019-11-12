@@ -14,8 +14,8 @@ const keyRow1 = [
   ['digit8', '8', '*', '8', '*', 56],
   ['digit9', '9', '(', '9', '(', 57],
   ['digit0', '0', ')', '0', ')', 48],
-  ['digit-', '-', '', '-', '', 189],
-  ['equal=', '=', '+', '=', '+', 187],
+  ['digit-', '-', '-', '-', '-', 189],
+  ['equal', '=', '+', '=', '+', 187],
   ['backspace', 'backspace', 'backspace', 'backspace', 'backspace', 8]
 ];
 
@@ -80,6 +80,8 @@ const keyRow5 = [
   ['ctrl', 'ctrl', 'ctrl', 'ctrl', 'ctrl', 17]
 ];
 
+const addKeys = ['shift', 'capsLock', 'backspace', 'del', '', 'tab', 'alt', 'ctrl', 'win', 'enter'];
+
 const rowsArray = [
   keyRow1,
   keyRow2,
@@ -92,20 +94,20 @@ if (!localStorage.getItem('Lang')) {
   localStorage.setItem('Lang', 'rus');
 }
 
-let block = document.createElement('div');
+const block = document.createElement('div');
 block.className = 'container';
 document.body.append(block);
 
-let textArea = document.createElement('textarea');
+const textArea = document.createElement('textarea');
 textArea.setAttribute('rows', '20');
 textArea.setAttribute('cols', '60');
 block.append(textArea);
 
-let keyboard = document.createElement('div');
+const keyboard = document.createElement('div');
 keyboard.className = 'keyboard';
 block.append(keyboard);
 
-let row = document.createElement('div');
+const row = document.createElement('div');
 row.className = 'row';
 
 let createRow = () => {
@@ -113,23 +115,23 @@ let createRow = () => {
   keyboard.append(newRow);
 };
 
-for (var i = 1; i <= numberRows; i++) {
+for (let i = 1; i <= numberRows; i++) {
   createRow();
 }
 
 let rows = document.querySelectorAll('.row');
-for (var j = 0; j < rows.length; j++) {
+for (let j = 0; j < rows.length; j++) {
   let rowNumber = j + 1;
   rows[j].classList.add('row' + rowNumber);
 }
 
-let button = document.createElement('div');
+const button = document.createElement('div');
 button.className = 'button';
 
-let langButton = document.createElement('div');
+const langButton = document.createElement('div');
 langButton.className = 'lang';
 
-let caseSymbol = document.createElement('div');
+const caseSymbol = document.createElement('div');
 caseSymbol.className = 'case';
 
 let takeButton = () => {
@@ -140,11 +142,11 @@ let takeButton = () => {
       const newButton = button.cloneNode(true);
       newButton.classList.add(keyRow[a][0]);
       newButton.addEventListener('mousedown', onButtonDown);
+      newButton.addEventListener('mouseup', onButtonUp);
       newButton.append(getButtonLang('rus', keyRow, a));
       newButton.append(getButtonLang('eng', keyRow, a));
       row.append(newButton);
     }
-
     setLanguage();
   }
 }
@@ -161,10 +163,10 @@ let getButtonLang = function(lang, keyRow, a) {
 }
 
 let getButtonSymbol = function(symbol, symbolCase) {
-  const newUpEngSymbol = caseSymbol.cloneNode(true);
-  newUpEngSymbol.classList.add(symbolCase);
-  newUpEngSymbol.innerHTML = symbol;
-  return newUpEngSymbol;
+  const newUpSymbol = caseSymbol.cloneNode(true);
+  newUpSymbol.classList.add(symbolCase);
+  newUpSymbol.innerHTML = symbol;
+  return newUpSymbol;
 }
 
 const pressedKeys = [];
@@ -175,7 +177,7 @@ let findPressedKey = (pressedKeys) => {
     const keyRow = rowsArray[c];
     for (let d = 0; d < keyRow.length; d++) {
       if (pressedKeys.includes(keyRow[d][5])) {
-        const activeClass = '.' + keyRow[d][0];
+        const activeClass = `.${keyRow[d][0]}`;
         let activeButton = document.querySelector(activeClass);
         activeButton.classList.add('button--active');
       }
@@ -192,32 +194,88 @@ let removePressedKey = () => {
   })
 }
 
-let onKeyDown = (evt) => {
-  const lastPressed = pressedKeys[pressedKeys.length - 1];
-  const pressedKey = evt.keyCode;
-  pressedKeys.push(pressedKey);
-  findPressedKey(pressedKeys);
-
-  if (evt.shiftKey && lastPressed !== 16) {
-    const down = document.querySelectorAll('.down');
-    const up = document.querySelectorAll('.up');
+let changeDownUpper = () => {
+  const firstDown = document.querySelector('.down');
+  const down = document.querySelectorAll('.down');
+  const up = document.querySelectorAll('.up');
+  if (firstDown.classList.contains('visually-hidden')) {
+    down.forEach(function (symbol) {
+      symbol.classList.remove('visually-hidden');
+    })
+    up.forEach(function (symbol) {
+      symbol.classList.add('visually-hidden');
+    })
+  } else {
     down.forEach(function (symbol) {
       symbol.classList.add('visually-hidden');
     })
     up.forEach(function (symbol) {
       symbol.classList.remove('visually-hidden');
     })
+    }
+}
+
+let onKeyDown = (evt) => {
+  const lastPressed = pressedKeys[pressedKeys.length - 1];
+  const pressedKey = evt.keyCode;
+  pressedKeys.push(pressedKey);
+  findPressedKey(pressedKeys);
+
+  if (evt.shiftKey && lastPressed !== 16 && !pressedKeys.includes(18)) {
+    changeDownUpper();
+  }
+
+  if (pressedKey ===  18 && lastPressed !== 18 && !pressedKeys.includes(16) || pressedKey ===  9) {
+    evt.preventDefault();
+  }
+
+  if (evt.keyCode === 20 && lastPressed !== 20) {
+    changeDownUpper();
   }
 };
 
 let onButtonDown = (evt) => {
-  textArea.setRangeText(
+  let text = textArea.value;
+  if (evt.target.innerHTML === 'shift') {
+    changeDownUpper();
+  }
+  if (evt.target.innerHTML === 'capsLock') {
+    changeDownUpper();
+  }
+  if (evt.target.innerHTML === 'backspace') {
+    text = text.slice(0, -1);
+    text = text.slice(0, textArea.selectionStart) + text.slice(textArea.selectionEnd);
+    textArea.value = text;
+  }
+  if (evt.target.innerHTML === 'del') {
+    text = text.slice(0, -1);
+    textArea.value = text;
+  }
+  if (evt.target.innerHTML === '') {
+    textArea.value += ' ';
+  }
+  if (evt.target.innerHTML === 'tab') {
+    textArea.value += '        ';
+  }
+  if (evt.target.innerHTML === 'enter') {
+    textArea.value += '\n';
+    textArea.value.replace(/\n/g, '<br>');
+  }
+  if (!addKeys.includes(evt.target.innerHTML)) {
+    textArea.setRangeText(
     evt.target.innerHTML,
     textArea.selectionStart,
     textArea.selectionEnd,
     'end'
-  )
-  window.getSelection().removeAllRanges();
+    )
+    window.getSelection().removeAllRanges();
+  }
+}
+
+let onButtonUp = (evt) => {
+  if (evt.target.innerHTML === 'shift') {
+    changeDownUpper();
+  }
 }
 
 let onKeyUp = function () {
@@ -228,18 +286,19 @@ let onKeyUp = function () {
     setLanguage();
   }
 
+  if (pressedKeys[pressedKeys.length - 1] === 18 && pressedKeys[pressedKeys.length - 2] !== 16) {
+    removePressedKey();
+  }
+
+  if (pressedKeys[pressedKeys.length - 1] === 16 && pressedKeys[pressedKeys.length - 2] !== 18) {
+    changeDownUpper();
+  }
+
   while (pressedKeys.length > 0) {
     pressedKeys.pop();
     removePressedKey();
   }
-  const down = document.querySelectorAll('.down');
-  const up = document.querySelectorAll('.up');
-  down.forEach(function (symbol) {
-    symbol.classList.remove('visually-hidden');
-  })
-  up.forEach(function (symbol) {
-    symbol.classList.add('visually-hidden');
-  })
+  
 };
 
 let setLanguage = () => {
@@ -247,6 +306,7 @@ let setLanguage = () => {
 
   const eng = document.querySelectorAll('.eng');
   const rus = document.querySelectorAll('.rus');
+
   if (lang === 'rus') {
     eng.forEach(function (engButton) {
       engButton.classList.remove('visually-hidden');
