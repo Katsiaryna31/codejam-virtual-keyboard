@@ -170,7 +170,6 @@ let getButtonSymbol = function(symbol, symbolCase) {
 }
 
 const pressedKeys = [];
-const codesCombination = [16, 18];
 
 let findPressedKey = (pressedKeys) => {
   for (let c = 0; c < rowsArray.length; c++) {
@@ -214,25 +213,6 @@ let changeDownUpper = () => {
     })
     }
 }
-
-let onKeyDown = (evt) => {
-  const lastPressed = pressedKeys[pressedKeys.length - 1];
-  const pressedKey = evt.keyCode;
-  pressedKeys.push(pressedKey);
-  findPressedKey(pressedKeys);
-
-  if (evt.shiftKey && lastPressed !== 16 && !pressedKeys.includes(18)) {
-    changeDownUpper();
-  }
-
-  if (pressedKey ===  18 && lastPressed !== 18 && !pressedKeys.includes(16) || pressedKey ===  9) {
-    evt.preventDefault();
-  }
-
-  if (evt.keyCode === 20 && lastPressed !== 20) {
-    changeDownUpper();
-  }
-};
 
 let onButtonDown = (evt) => {
   let text = textArea.value;
@@ -278,29 +258,6 @@ let onButtonUp = (evt) => {
   }
 }
 
-let onKeyUp = function () {
-  if (codesCombination.includes(pressedKeys[pressedKeys.length - 1]) && codesCombination.includes(pressedKeys[pressedKeys.length - 2])) {
-    let lang = localStorage.getItem('Lang');
-    lang = lang === 'rus' ? 'eng' : 'rus';
-    localStorage.setItem('Lang', lang);
-    setLanguage();
-  }
-
-  if (pressedKeys[pressedKeys.length - 1] === 18 && pressedKeys[pressedKeys.length - 2] !== 16) {
-    removePressedKey();
-  }
-
-  if (pressedKeys[pressedKeys.length - 1] === 16 && pressedKeys[pressedKeys.length - 2] !== 18) {
-    changeDownUpper();
-  }
-
-  while (pressedKeys.length > 0) {
-    pressedKeys.pop();
-    removePressedKey();
-  }
-  
-};
-
 let setLanguage = () => {
   const lang = localStorage.getItem('Lang');
 
@@ -324,7 +281,48 @@ let setLanguage = () => {
   }
 }
 
-document.addEventListener('keydown', onKeyDown);
-document.addEventListener('keyup', onKeyUp);
+document.addEventListener('keydown', (evt) => {
+  const keyName = evt.key;
+  const lastPressed = pressedKeys[pressedKeys.length - 1];
+  const pressedKey = evt.keyCode;
+  pressedKeys.push(pressedKey);
+  findPressedKey(pressedKeys);
+
+  if (evt.ctrlKey && keyName === "Alt") {
+    let lang = localStorage.getItem('Lang');
+    lang = lang === 'rus' ? 'eng' : 'rus';
+    localStorage.setItem('Lang', lang);
+    setLanguage();
+  } 
+
+  if (evt.shiftKey && lastPressed !== 16) {
+    changeDownUpper();
+  }
+
+  if (keyName === "Alt") {
+    evt.preventDefault();
+  }
+
+  if (keyName === "Tab") {
+   evt.preventDefault();
+  }
+
+  if (keyName === "CapsLock") {
+    changeDownUpper();
+  }
+}, false);
+
+document.addEventListener('keyup', () => {
+
+  if (pressedKeys[pressedKeys.length - 1] === 16) {
+    changeDownUpper();
+  }
+
+  while (pressedKeys.length > 0) {
+    pressedKeys.pop();
+    removePressedKey();
+  }
+
+});
 
 takeButton();
